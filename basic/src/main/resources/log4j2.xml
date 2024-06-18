@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--Configuration后面的status，这个用于设置log4j2自身内部的信息输出，可以不设置，当设置成trace时，你会看到log4j2内部各种详细输出-->
+<!--monitorInterval：Log4j能够自动检测修改配置 文件和重新配置本身，设置间隔秒数(最小是5秒钟)-->
+<configuration monitorInterval="5" status="info">
+    <!--变量配置-->
+    <Properties>
+        <!--日志文件路径-->
+        <property name="FILE_LOG_HOME">/tmp/logs</property>
+        <!--日志格式-->
+        <property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss,SSS} ｜ %highlight{%5level} ｜ %logger{36}.%M(): %m %n</property>
+    </Properties>
+
+    <!--控制台appender-->
+    <appenders>
+        <!--console节点用来定义输出到控制台的Appender-->
+        <console>
+            <!--appender名称-->
+            <name>console</name>
+            <!--日志输出位置-->
+            <target>SYSTEM_OUT</target>
+            <!--输出日志的格式,默认为：%m%n,即只输出日志和换行-->
+            <PatternLayout>
+                <pattern>${LOG_PATTERN}</pattern>
+            </PatternLayout>
+            <!--阈值过滤器，控制台只输出level及其以上级别的信息（onMatch），其他的直接拒绝（onMismatch）-->
+            <ThresholdFilter>
+                <level>INFO</level>
+                <onMatch>ACCEPT</onMatch>
+                <onMismatch>DENY</onMismatch>
+            </ThresholdFilter>
+        </console>
+
+        <!--文件日志appender-->
+        <File>
+            <!--appender名称-->
+            <name>file</name>
+            <!--日志文件名称-->
+            <fileName>${FILE_LOG_HOME}/log4j2-File.log</fileName>
+            <!--输出日志的格式,默认为：%m%n,即只输出日志和换行-->
+            <PatternLayout>
+                <pattern>${LOG_PATTERN}</pattern>
+            </PatternLayout>
+        </File>
+
+        <!--定义异步
+        <Async>
+            <name>asyncfile</name>
+            <AppenderRef ref="file"/>
+        </Async>
+        -->
+
+        <!--随机读写appender，使用随机读写，效率更高-->
+        <RandomAccessFile>
+            <name>accessFile</name>
+            <fileName>${FILE_LOG_HOME}/log4j2-AccFile.log</fileName>
+            <PatternLayout>
+                <pattern>${LOG_PATTERN}</pattern>
+            </PatternLayout>
+        </RandomAccessFile>
+
+        <!--滚动日志appender，可以按照一定的规则拆分日志文件
+        综合policy，每次系统启动进行一次拆分；每天形成一个日志文件夹；每小时形成一个log文件；
+        如果单个log文件超过10MB则按序号滚动生成一个新的日志文件-i；
+        -->
+        <RollingFile>
+            <name>rollingFile</name>
+            <fileName>${FILE_LOG_HOME}/log4j2-RollingFile.log</fileName>
+            <!--每天一个文件夹，一天内每小时拆分一个日志文件-->
+            <filePattern>${FILE_LOG_HOME}/$${date:yyyy-MM-dd}/myrollog-%d{yyyy-MM-dd-HH}-%i.log</filePattern>
+            <PatternLayout>
+                <pattern>${LOG_PATTERN}</pattern>
+            </PatternLayout>
+            <!--阈值过滤器，控制台只输出level及其以上级别的信息（onMatch），其他的直接拒绝（onMismatch）-->
+            <ThresholdFilter>
+                <level>debug</level>
+                <onMatch>ACCEPT</onMatch>
+                <onMismatch>DENY</onMismatch>
+            </ThresholdFilter>
+            <Policies>
+                <!--系统启动时就进行文件拆分-->
+                <OnStartupTriggeringPolicy/>
+                <!--按照文件大小进行拆分-->
+                <SizeBasedTriggeringPolicy>
+                    <size>10MB</size>
+                </SizeBasedTriggeringPolicy>
+                <!--按照时间规则进行拆分-->
+                <TimebasedTriggeringPolicy/>
+            </Policies>
+            <!--同一个目录下，文件最大数量-->
+            <DefaultRolloverStrategy>
+                <max>30</max>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+    </appenders>
+
+    <!--定义loggers，只有定义了logger并引入的appender，appender才会生效-->
+    <loggers>
+        <!--root 节点用来指定项目的根日志，level:日志输出级别，-->
+        <root level="info">
+            <AppenderRef ref="console"/>
+            <!--            <AppenderRef ref="rollingFile"/>-->
+            <!--            <AppenderRef ref="accessFile"/>-->
+            <!--添加异步appender
+            <AppenderRef ref="asyncfile"/>
+            -->
+        </root>
+    </loggers>
+</configuration>
